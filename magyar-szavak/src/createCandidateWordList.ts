@@ -53,10 +53,12 @@ export const CHAR_VALUES = [
 // Parse input file
 const hungarianWordsText = fs.readFileSync("./src/magyar-szavak.txt").toString();
 const hungarianWords = hungarianWordsText.split("\n").map(word => word.toLowerCase().trim());
-// Exclude words with special characters
-const hungarianWordsOnlyAlphabet = hungarianWords.filter(word => {
-    return word.toUpperCase().split("").every(letter => CHAR_VALUES.includes(letter));
-});
+// Exclude words with special characters and exclude some words manually
+const hungarianWordsOnlyAlphabet = hungarianWords
+    .filter(word => {
+        return word.toUpperCase().split("").every(letter => CHAR_VALUES.includes(letter));
+    })
+    .filter(word => word !== "zsivaly");
 // Split into letters
 const wordLetters = hungarianWordsOnlyAlphabet.map(getWordLetters);
 // Reduce the list to words which may have the given number of characters
@@ -72,6 +74,9 @@ candidateWordLetters.push(
     getWordLetters("nyitva"),
     getWordLetters("tórusz"),
     getWordLetters("térkő"),
+    getWordLetters("dzsuvás"),
+    getWordLetters("dzsadzsál"),
+    getWordLetters("zsivaj"),
 );
 
 // Save to file
