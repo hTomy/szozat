@@ -3,11 +3,14 @@ import { solutionIndex, solutionCreator } from './words'
 import { GAME_TITLE } from '../constants/strings'
 import { MAX_CHALLENGES } from '../constants/settings'
 
+export const getPuzzleName = () => {
+  return solutionCreator !== undefined
+    ? 'Jelige: ' + solutionCreator
+    : solutionIndex + '. nap'
+}
+
 export const getShareText = (guesses: Word[], lost: boolean) => {
-  const identifier =
-    solutionCreator !== undefined
-      ? 'Jelige: ' + solutionCreator
-      : solutionIndex + '. nap'
+  const identifier = getPuzzleName()
   const text =
     `${GAME_TITLE} - ${identifier} - ${
       lost ? 'X' : guesses.length

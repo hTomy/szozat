@@ -43,6 +43,7 @@ import { CreatePuzzleModal } from './components/modals/CreatePuzzleModal'
 import { DOUBLE_LETTERS } from './lib/hungarianWordUtils'
 
 import './App.css'
+import { getPuzzleName } from './lib/share'
 
 function App() {
   const prefersDarkMode = window.matchMedia(
@@ -333,8 +334,8 @@ function App() {
       <div className="transition-all">
         <div className="flex flex-col h-[100vh] pt-2 w-[100%] max-w-[500px] mx-auto sm:px-6 lg:px-8">
           <div className="flex w-80 mx-auto items-center mb-2">
-            <h1 className="text-xl ml-2.5 grow font-bold dark:text-white">
-              {GAME_TITLE}
+            <h1 className="text-xl grow font-bold dark:text-white">
+              {GAME_TITLE} - {getPuzzleName()}
             </h1>
             {isDarkMode ? (
               <SunIcon
@@ -356,7 +357,7 @@ function App() {
               onClick={() => setIsStatsModalOpen(true)}
             />
             <PlusCircleIcon
-              className="h-6 w-6 mr-3 cursor-pointer dark:stroke-white"
+              className="h-6 w-6 cursor-pointer dark:stroke-white"
               onClick={() => setIsCreatePuzzleModalOpen(true)}
             />
           </div>
