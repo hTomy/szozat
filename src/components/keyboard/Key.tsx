@@ -1,7 +1,8 @@
 import { ReactNode } from 'react'
 import classnames from 'classnames'
-import { KeyValue } from '../../lib/keyboard'
 import { CharStatus } from '../../lib/statuses'
+import { MAX_WORD_LENGTH, REVEAL_TIME_MS } from '../../constants/settings'
+import { KeyValue } from './Keyboard'
 
 type Props = {
   children?: ReactNode
@@ -9,6 +10,7 @@ type Props = {
   width?: number
   status?: CharStatus
   onClick: (value: KeyValue) => void
+  isRevealing?: boolean
 }
 
 export const Key = ({
@@ -17,13 +19,17 @@ export const Key = ({
   width = 40,
   value,
   onClick,
+  isRevealing,
 }: Props) => {
+  const keyDelayMs = REVEAL_TIME_MS * MAX_WORD_LENGTH
+
   const classes = classnames(
-    'flex items-center justify-center rounded mx-0.5 text-xs font-bold cursor-pointer select-none',
+    'flex items-center justify-center rounded mx-0.5 text-xs font-bold cursor-pointer select-none dark:text-white',
     {
-      'bg-slate-200 dark:bg-slate-500 hover:bg-slate-600 dark:hover:bg-slate-400 active:bg-slate-400 dark:text-slate-900':
+      'transition ease-in-out': isRevealing,
+      'bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 active:bg-slate-400':
         !status,
-      'bg-slate-400 text-white': status === 'absent',
+      'bg-slate-400 dark:bg-slate-800 text-white': status === 'absent',
       'bg-green-500 hover:bg-green-600 active:bg-green-700 text-white':
         status === 'correct',
       'bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 dark:bg-yellow-700 text-white':
@@ -31,17 +37,19 @@ export const Key = ({
     }
   )
 
+  const styles = {
+    transitionDelay: isRevealing ? `${keyDelayMs}ms` : 'unset',
+    width: `${width}px`,
+    height: '50px',
+  }
+
   const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     onClick(value)
     event.currentTarget.blur()
   }
 
   return (
-    <button
-      style={{ width: `${width}px`, height: '50px' }}
-      className={classes}
-      onClick={handleClick}
-    >
+    <button style={styles} className={classes} onClick={handleClick}>
       {children || value}
     </button>
   )

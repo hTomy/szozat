@@ -1,6 +1,6 @@
 import { Word } from '../lib/statuses'
 
-export const WORDLE_TITLE = 'Szózat'
+export const GAME_TITLE = 'Szózat'
 
 export const WIN_MESSAGES = ['Ez igen!', 'Szép munka!', 'Megcsináltad!']
 export const GAME_COPIED_MESSAGE = 'A játékot kimásoltuk a vágólapra'

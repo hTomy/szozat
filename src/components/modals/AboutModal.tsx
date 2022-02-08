@@ -33,7 +33,7 @@ export const AboutModal = ({ isOpen, handleClose }: Props) => {
       <p className="text-sm text-gray-500 dark:text-gray-300 pb-2">
         Az angol verzió klónjának{' '}
         <a
-          href="https://github.com/hannahcode/wordle"
+          href="https://github.com/cwackerfuss/react-wordle"
           className="underline font-bold"
         >
           a kódját itt találod.

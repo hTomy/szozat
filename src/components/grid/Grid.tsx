@@ -1,5 +1,5 @@
-import { MAX_NUMBER_OF_GUESSES } from '../../constants/constants'
 import { Word } from '../../lib/statuses'
+import { MAX_CHALLENGES } from '../../constants/settings'
 import { CompletedRow } from './CompletedRow'
 import { CurrentRow } from './CurrentRow'
 import { EmptyRow } from './EmptyRow'
@@ -8,12 +8,13 @@ type Props = {
   guesses: Word[]
   currentGuess: Word
   size: { width: number; height: number }
+  isRevealing?: boolean
 }
 
-export const Grid = ({ guesses, currentGuess, size }: Props) => {
+export const Grid = ({ guesses, currentGuess, size, isRevealing }: Props) => {
   const empties =
-    guesses.length < MAX_NUMBER_OF_GUESSES - 1
-      ? Array.from(Array(MAX_NUMBER_OF_GUESSES - 1 - guesses.length))
+    guesses.length < MAX_CHALLENGES - 1
+      ? Array.from(Array(MAX_CHALLENGES - 1 - guesses.length))
       : []
 
   return (
@@ -22,11 +23,13 @@ export const Grid = ({ guesses, currentGuess, size }: Props) => {
       style={{ width: `${size.width}px`, height: `${size.height}px` }}
     >
       {guesses.map((guess, i) => (
-        <CompletedRow key={i} guess={guess} />
+        <CompletedRow
+          key={i}
+          guess={guess}
+          isRevealing={isRevealing && guesses.length - 1 === i}
+        />
       ))}
-      {guesses.length < MAX_NUMBER_OF_GUESSES && (
-        <CurrentRow guess={currentGuess} />
-      )}
+      {guesses.length < MAX_CHALLENGES && <CurrentRow guess={currentGuess} />}
       {empties.map((_, i) => (
         <EmptyRow key={i} />
       ))}

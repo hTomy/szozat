@@ -3,8 +3,9 @@ import {
   ChartBarIcon,
   PlusCircleIcon,
   SunIcon,
+  MoonIcon,
 } from '@heroicons/react/outline'
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Alert } from './components/alerts/Alert'
 import { Grid } from './components/grid/Grid'
 import { Keyboard } from './components/keyboard/Keyboard'
@@ -18,7 +19,7 @@ import {
   isWordEqual,
 } from './lib/words'
 import {
-  WORDLE_TITLE,
+  GAME_TITLE,
   WIN_MESSAGES,
   GAME_COPIED_MESSAGE,
   ABOUT_GAME_MESSAGE,
@@ -26,19 +27,22 @@ import {
   WORD_NOT_FOUND_MESSAGE,
   CORRECT_WORD_MESSAGE,
 } from './constants/strings'
+import {
+  MAX_WORD_LENGTH,
+  MAX_CHALLENGES,
+  ALERT_TIME_MS,
+  REVEAL_TIME_MS,
+} from './constants/settings'
 import { addStatsForCompletedGame, loadStats } from './lib/stats'
 import {
   loadGameStateFromLocalStorage,
   saveGameStateToLocalStorage,
 } from './lib/localStorage'
 import { CharValue, Word } from './lib/statuses'
-import { MAX_NUMBER_OF_GUESSES } from './constants/constants'
 import { CreatePuzzleModal } from './components/modals/CreatePuzzleModal'
 import { DOUBLE_LETTERS } from './lib/hungarianWordUtils'
 
 import './App.css'
-
-const ALERT_TIME_MS = 2000
 
 function App() {
   const prefersDarkMode = window.matchMedia(
@@ -64,6 +68,7 @@ function App() {
       : false
   )
   const [successAlert, setSuccessAlert] = useState('')
+  const [isRevealing, setIsRevealing] = useState(false)
   const [guesses, setGuesses] = useState<Word[]>(() => {
     const loaded = loadGameStateFromLocalStorage()
     if (loaded == null) {
@@ -78,7 +83,7 @@ function App() {
     if (gameWasWon) {
       setIsGameWon(true)
     }
-    if (loaded.guesses.length === MAX_NUMBER_OF_GUESSES && !gameWasWon) {
+    if (loaded.guesses.length === MAX_CHALLENGES && !gameWasWon) {
       setIsGameLost(true)
     }
     return loaded.guesses
@@ -96,10 +101,12 @@ function App() {
       }
       const gridContainerHeight = gridContainerRef.current.clientHeight
       const gridWidth = Math.min(
-        Math.floor(gridContainerHeight * (5 / MAX_NUMBER_OF_GUESSES)),
+        Math.floor(gridContainerHeight * (MAX_WORD_LENGTH / MAX_CHALLENGES)),
         350
       )
-      const gridHeight = Math.floor((MAX_NUMBER_OF_GUESSES * gridWidth) / 5)
+      const gridHeight = Math.floor(
+        (MAX_CHALLENGES * gridWidth) / MAX_WORD_LENGTH
+      )
       setGridSize({ width: gridWidth, height: gridHeight })
     }
     window.addEventListener('resize', handleResize)
@@ -129,13 +136,15 @@ function App() {
 
   useEffect(() => {
     if (isGameWon) {
-      setSuccessAlert(
-        WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)]
-      )
       setTimeout(() => {
-        setSuccessAlert('')
-        setIsStatsModalOpen(true)
-      }, ALERT_TIME_MS)
+        setSuccessAlert(
+          WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)]
+        )
+        setTimeout(() => {
+          setSuccessAlert('')
+          setIsStatsModalOpen(true)
+        }, ALERT_TIME_MS)
+      }, REVEAL_TIME_MS * MAX_WORD_LENGTH)
     }
     if (isGameLost) {
       setTimeout(() => {
@@ -145,7 +154,7 @@ function App() {
   }, [isGameWon, isGameLost])
 
   const onChar = (value: CharValue) => {
-    if (guesses.length >= MAX_NUMBER_OF_GUESSES || isGameWon) {
+    if (guesses.length >= MAX_CHALLENGES || isGameWon) {
       return
     }
     const currentGuessLastChar =
@@ -176,7 +185,10 @@ function App() {
             ...currentGuess.slice(0, currentGuess.length - 2),
             ...tripleMatch.letters.map((letter) => letter.toUpperCase()),
           ] as Word)
-    if (newGuessWithTriple !== undefined && newGuessWithTriple.length <= 5) {
+    if (
+      newGuessWithTriple !== undefined &&
+      newGuessWithTriple.length <= MAX_WORD_LENGTH
+    ) {
       setCurrentGuess(newGuessWithTriple)
       return
     }
@@ -191,12 +203,15 @@ function App() {
             ...currentGuess.slice(0, currentGuess.length - 1),
             ...doubleMatch.letters.map((letter) => letter.toUpperCase()),
           ] as Word)
-    if (newGuessWithDouble !== undefined && newGuessWithDouble.length <= 5) {
+    if (
+      newGuessWithDouble !== undefined &&
+      newGuessWithDouble.length <= MAX_WORD_LENGTH
+    ) {
       setCurrentGuess(newGuessWithDouble)
       return
     }
     const newGuessWithSingle = [...currentGuess, value]
-    if (newGuessWithSingle.length <= 5) {
+    if (newGuessWithSingle.length <= MAX_WORD_LENGTH) {
       setCurrentGuess(newGuessWithSingle)
       return
     }
@@ -210,7 +225,7 @@ function App() {
     if (isGameWon || isGameLost) {
       return
     }
-    if (!(currentGuess.length === 5)) {
+    if (!(currentGuess.length === MAX_WORD_LENGTH)) {
       setIsNotEnoughLetters(true)
       return setTimeout(() => {
         setIsNotEnoughLetters(false)
@@ -227,11 +242,18 @@ function App() {
       }, ALERT_TIME_MS)
     }
 
+    setIsRevealing(true)
+    // turn this back off after all
+    // chars have been revealed
+    setTimeout(() => {
+      setIsRevealing(false)
+    }, REVEAL_TIME_MS * MAX_WORD_LENGTH)
+
     const winningWord = isWinningWord(currentGuess)
 
     if (
-      currentGuess.length === 5 &&
-      guesses.length < MAX_NUMBER_OF_GUESSES &&
+      currentGuess.length === MAX_WORD_LENGTH &&
+      guesses.length < MAX_CHALLENGES &&
       !isGameWon
     ) {
       setGuesses([...guesses, currentGuess])
@@ -242,7 +264,7 @@ function App() {
         return setIsGameWon(true)
       }
 
-      if (guesses.length === MAX_NUMBER_OF_GUESSES - 1) {
+      if (guesses.length === MAX_CHALLENGES - 1) {
         setStats(addStatsForCompletedGame(stats, guesses.length + 1))
         setIsGameLost(true)
       }
@@ -311,23 +333,30 @@ function App() {
       <div className="transition-all">
         <div className="flex flex-col h-[100vh] pt-2 w-[100%] max-w-[500px] mx-auto sm:px-6 lg:px-8">
           <div className="flex w-80 mx-auto items-center mb-2">
-            <h1 className="text-xl grow font-bold dark:text-white">
-              {WORDLE_TITLE}
+            <h1 className="text-xl ml-2.5 grow font-bold dark:text-white">
+              {GAME_TITLE}
             </h1>
-            <SunIcon
-              className="h-6 w-6 cursor-pointer dark:stroke-white"
-              onClick={() => handleDarkMode(!isDarkMode)}
-            />
+            {isDarkMode ? (
+              <SunIcon
+                className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
+                onClick={() => handleDarkMode(!isDarkMode)}
+              />
+            ) : (
+              <MoonIcon
+                className="h-6 w-6 mr-2 cursor-pointer"
+                onClick={() => handleDarkMode(!isDarkMode)}
+              />
+            )}
             <InformationCircleIcon
-              className="h-6 w-6 cursor-pointer dark:stroke-white"
+              className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
               onClick={() => setIsInfoModalOpen(true)}
             />
             <ChartBarIcon
-              className="h-6 w-6 cursor-pointer dark:stroke-white"
+              className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
               onClick={() => setIsStatsModalOpen(true)}
             />
             <PlusCircleIcon
-              className="h-6 w-6 cursor-pointer dark:stroke-white"
+              className="h-6 w-6 mr-3 cursor-pointer dark:stroke-white"
               onClick={() => setIsCreatePuzzleModalOpen(true)}
             />
           </div>
@@ -339,6 +368,7 @@ function App() {
               guesses={guesses}
               currentGuess={currentGuess}
               size={gridSize}
+              isRevealing={isRevealing}
             />
           </div>
           <div className="pb-2">
@@ -347,6 +377,7 @@ function App() {
               onDelete={onDelete}
               onEnter={onEnter}
               guesses={guesses}
+              isRevealing={isRevealing}
             />
           </div>
         </div>

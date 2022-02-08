@@ -1,4 +1,5 @@
 import { Word } from '../../lib/statuses'
+import { MAX_WORD_LENGTH } from '../../constants/settings'
 import { Cell } from './Cell'
 
 type Props = {
@@ -6,10 +7,10 @@ type Props = {
 }
 
 export const CurrentRow = ({ guess }: Props) => {
-  const emptyCells = Array.from(Array(5 - guess.length))
+  const emptyCells = Array.from(Array(MAX_WORD_LENGTH - guess.length))
 
   return (
-    <div className="grid grid-cols-5 gap-1">
+    <div className={`grid grid-cols-${MAX_WORD_LENGTH} gap-1`}>
       {guess.map((letter, i) => (
         <Cell key={i} value={letter} />
       ))}

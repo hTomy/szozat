@@ -1,5 +1,5 @@
+import { MAX_CHALLENGES } from '../../constants/settings'
 import { Cell } from '../grid/Cell'
-import { MAX_NUMBER_OF_GUESSES } from '../../constants/constants'
 import { BaseModal } from './BaseModal'
 
 type Props = {
@@ -11,8 +11,8 @@ export const InfoModal = ({ isOpen, handleClose }: Props) => {
   return (
     <BaseModal title="Szabályok" isOpen={isOpen} handleClose={handleClose}>
       <p className="text-sm text-gray-500 dark:text-gray-300">
-        Találd ki a napi szót {MAX_NUMBER_OF_GUESSES} tippből! Minden tipp után
-        a négyzetek színe jelzi, hogy mennyire kerültél közel a megoldáshoz.
+        Találd ki a napi szót {MAX_CHALLENGES} tippből! Minden tipp után a
+        négyzetek színe jelzi, hogy mennyire kerültél közel a megoldáshoz.
       </p>
 
       {/* <div className="flex justify-center mb-1 mt-4"> */}

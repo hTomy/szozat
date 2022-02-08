@@ -1,8 +1,8 @@
 import { WORDS } from '../constants/wordlist'
-import { VALIDGUESSES } from '../constants/validGuesses'
 import { Word } from './statuses'
 import { isEqual } from 'lodash'
 import { getWordLetters } from './hungarianWordUtils'
+import { VALID_GUESSES } from '../constants/validGuesses'
 import {
   getDecodedHashParam,
   HASH_PARAM_KEY_CREATOR,
@@ -14,7 +14,10 @@ export const isWordEqual = (word1: Word, word2: Word) => {
 }
 
 export const isWordInWordList = (word: Word) => {
-  return VALIDGUESSES.some((validWord) => isWordEqual(word, validWord))
+  return (
+    WORDS.some((validWord) => isWordEqual(word, validWord)) ||
+    VALID_GUESSES.some((validWord) => isWordEqual(word, validWord))
+  )
 }
 
 export const isWinningWord = (word: Word) => {
