@@ -79,3 +79,20 @@ self.addEventListener('message', (event) => {
 })
 
 // Any other custom service worker logic can go here.
+
+// Network-first loading, see https://jakearchibald.com/2014/offline-cookbook/#network-falling-back-to-cache
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    (async function () {
+      try {
+        return await fetch(event.request)
+      } catch (err) {
+        const cacheMatch = await caches.match(event.request)
+        if (cacheMatch === undefined) {
+          throw err
+        }
+        return cacheMatch
+      }
+    })()
+  )
+})
