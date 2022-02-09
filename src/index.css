@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html {
-  --default-cell-bg-color: --default-cell-bg-color;
+  --default-cell-bg-color: theme('colors.slate.400');
 }
 
 .dark {
@@ -41,21 +41,21 @@ html {
 @keyframes revealAbsentCharCell {
   0% {
     transform: rotateX(0deg);
-    background-color: --default-cell-bg-color;
-    border-color: --default-cell-bg-color;
+    background-color: var(--default-cell-bg-color);
+    border-color: var(--default-cell-bg-color);
   }
   100% {
     transform: rotateX(180deg);
-    background-color: --default-cell-bg-color;
-    border-color: --default-cell-bg-color;
+    background-color: var(--default-cell-bg-color);
+    border-color: var(--default-cell-bg-color);
   }
 }
 
 @keyframes revealCorrectCharCell {
   0% {
     transform: rotateX(0deg);
-    background-color: --default-cell-bg-color;
-    border-color: --default-cell-bg-color;
+    background-color: var(--default-cell-bg-color);
+    border-color: var(--default-cell-bg-color);
   }
   100% {
     transform: rotateX(180deg);
@@ -67,8 +67,8 @@ html {
 @keyframes revealPresentCharCell {
   0% {
     transform: rotateX(0deg);
-    background-color: --default-cell-bg-color;
-    border-color: --default-cell-bg-color;
+    background-color: var(--default-cell-bg-color);
+    border-color: var(--default-cell-bg-color);
   }
   100% {
     transform: rotateX(180deg);
