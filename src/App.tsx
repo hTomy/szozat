@@ -4,6 +4,8 @@ import {
   PlusCircleIcon,
   SunIcon,
   MoonIcon,
+  CakeIcon,
+  AcademicCapIcon,
 } from '@heroicons/react/outline'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Alert } from './components/alerts/Alert'
@@ -17,6 +19,7 @@ import {
   isWinningWord,
   solution,
   isWordEqual,
+  findFirstUnusedReveal,
 } from './lib/words'
 import {
   GAME_TITLE,
@@ -32,6 +35,7 @@ import {
   MAX_CHALLENGES,
   ALERT_TIME_MS,
   REVEAL_TIME_MS,
+  GAME_LOST_INFO_DELAY,
 } from './constants/settings'
 import { addStatsForCompletedGame, loadStats } from './lib/stats'
 import {
@@ -44,6 +48,8 @@ import { DOUBLE_LETTERS } from './lib/hungarianWordUtils'
 
 import './App.css'
 import { getPuzzleName } from './lib/share'
+
+import './App.css'
 
 function App() {
   const prefersDarkMode = window.matchMedia(
@@ -95,6 +101,34 @@ function App() {
 
   const [stats, setStats] = useState(() => loadStats())
 
+  const [isHardMode, setIsHardMode] = useState(
+    localStorage.getItem('gameMode')
+      ? localStorage.getItem('gameMode') === 'hard'
+      : false
+  )
+
+  const [isMissingPreviousLetters, setIsMissingPreviousLetters] =
+    useState(false)
+  const [missingLetterMessage, setIsMissingLetterMessage] = useState('')
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [isDarkMode])
+
+  const handleDarkMode = (isDark: boolean) => {
+    setIsDarkMode(isDark)
+    localStorage.setItem('theme', isDark ? 'dark' : 'light')
+  }
+
+  const handleHardMode = (isHard: boolean) => {
+    setIsHardMode(isHard)
+    localStorage.setItem('gameMode', isHard ? 'hard' : 'normal')
+  }
+
   useEffect(() => {
     const handleResize = () => {
       if (gridContainerRef.current == null) {
@@ -126,11 +160,6 @@ function App() {
     }
   }, [isDarkMode])
 
-  const handleDarkMode = (isDark: boolean) => {
-    setIsDarkMode(isDark)
-    localStorage.setItem('theme', isDark ? 'dark' : 'light')
-  }
-
   useEffect(() => {
     saveGameStateToLocalStorage({ guesses, solution })
   }, [guesses])
@@ -150,7 +179,7 @@ function App() {
     if (isGameLost) {
       setTimeout(() => {
         setIsStatsModalOpen(true)
-      }, ALERT_TIME_MS)
+      }, GAME_LOST_INFO_DELAY)
     }
   }, [isGameWon, isGameLost])
 
@@ -243,6 +272,18 @@ function App() {
       }, ALERT_TIME_MS)
     }
 
+    // enforce hard mode - all guesses must contain all previously revealed letters
+    if (isHardMode) {
+      const firstMissingReveal = findFirstUnusedReveal(currentGuess, guesses)
+      if (firstMissingReveal) {
+        setIsMissingLetterMessage(firstMissingReveal)
+        setIsMissingPreviousLetters(true)
+        return setTimeout(() => {
+          setIsMissingPreviousLetters(false)
+        }, ALERT_TIME_MS)
+      }
+    }
+
     setIsRevealing(true)
     // turn this back off after all
     // chars have been revealed
@@ -293,6 +334,7 @@ function App() {
         message={WORD_NOT_FOUND_MESSAGE}
         isOpen={isWordNotFoundAlertOpen}
       />
+      <Alert message={missingLetterMessage} isOpen={isMissingPreviousLetters} />
       <Alert message={CORRECT_WORD_MESSAGE(solution)} isOpen={isGameLost} />
       <Alert
         message={successAlert}
@@ -322,6 +364,7 @@ function App() {
         isGameWon={isGameWon}
         handleShareCopySuccess={handleShareCopySuccess}
         handleShareFailure={handleShareFailure}
+        isHardMode={isHardMode}
       />
       <AboutModal
         isOpen={isAboutModalOpen}
@@ -337,6 +380,17 @@ function App() {
             <h1 className="text-xl grow font-bold dark:text-white">
               {GAME_TITLE} - {getPuzzleName()}
             </h1>
+            {isHardMode ? (
+              <AcademicCapIcon
+                className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
+                onClick={() => handleHardMode(!isHardMode)}
+              />
+            ) : (
+              <CakeIcon
+                className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
+                onClick={() => handleHardMode(!isHardMode)}
+              />
+            )}
             {isDarkMode ? (
               <SunIcon
                 className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"

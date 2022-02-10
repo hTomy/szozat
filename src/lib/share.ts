@@ -9,19 +9,27 @@ export const getPuzzleName = () => {
     : solutionIndex + '. nap'
 }
 
-export const getShareText = (guesses: Word[], lost: boolean) => {
+export const getShareText = (
+  guesses: Word[],
+  lost: boolean,
+  isHardMode: boolean
+) => {
   const identifier = getPuzzleName()
   const text =
     `${GAME_TITLE} - ${identifier} - ${
       lost ? 'X' : guesses.length
-    }/${MAX_CHALLENGES}\n\n` +
+    }/${MAX_CHALLENGES}${isHardMode ? '*' : ''}\n\n` +
     generateEmojiGrid(guesses) +
     `\n\n${window.location.href}`
   return text
 }
 
-export const shareStatus = async (guesses: Word[], lost: boolean) => {
-  const text = getShareText(guesses, lost)
+export const shareStatus = async (
+  guesses: Word[],
+  lost: boolean,
+  isHardMode: boolean
+) => {
+  const text = getShareText(guesses, lost, isHardMode)
   if (navigator?.share != null) {
     await navigator.share({ text })
     return { type: 'share' as const }

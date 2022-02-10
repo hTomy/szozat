@@ -1,5 +1,5 @@
 import { WORDS } from '../constants/wordlist'
-import { Word } from './statuses'
+import { CharValue, Word } from './statuses'
 import { isEqual } from 'lodash'
 import { getWordLetters } from './hungarianWordUtils'
 import { VALID_GUESSES } from '../constants/validGuesses'
@@ -8,6 +8,7 @@ import {
   HASH_PARAM_KEY_CREATOR,
   HASH_PARAM_KEY_SOLUTION,
 } from './hashUtils'
+import { getGuessStatuses } from './statuses'
 
 export const isWordEqual = (word1: Word, word2: Word) => {
   return isEqual(word1, word2)
@@ -22,6 +23,32 @@ export const isWordInWordList = (word: Word) => {
 
 export const isWinningWord = (word: Word) => {
   return isWordEqual(solution, word)
+}
+
+// build a set of previously revealed letters - present and correct
+// guess must use correct letters in that space and any other revealed letters
+export const findFirstUnusedReveal = (word: Word, guesses: Word[]) => {
+  const knownLetterSet = new Set<CharValue>()
+  for (const guess of guesses) {
+    const statuses = getGuessStatuses(guess)
+
+    for (let i = 0; i < guess.length; i++) {
+      if (statuses[i] === 'correct' || statuses[i] === 'present') {
+        knownLetterSet.add(guess[i])
+      }
+      if (statuses[i] === 'correct' && word[i] !== guess[i]) {
+        return `A(z) ${guess[i]} betűnek a(z) ${i + 1}. pozícióban kell lennie.`
+      }
+    }
+  }
+
+  for (const letter of Array.from(knownLetterSet.values())) {
+    // fail fast, always return first failed letter if applicable
+    if (!word.includes(letter)) {
+      return `A(z) ${letter} betűnek is szerepelnie kell a szóban.`
+    }
+  }
+  return false
 }
 
 export const getWordOfDay = () => {

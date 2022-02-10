@@ -23,6 +23,7 @@ type Props = {
   isGameWon: boolean
   handleShareCopySuccess: () => void
   handleShareFailure: () => void
+  isHardMode: boolean
 }
 
 export const StatsModal = ({
@@ -34,32 +35,42 @@ export const StatsModal = ({
   isGameWon,
   handleShareCopySuccess,
   handleShareFailure,
+  isHardMode,
 }: Props) => {
   const handleShareClick = useCallback(async () => {
     try {
-      const { type } = await shareStatus(guesses, isGameLost)
+      const { type } = await shareStatus(guesses, isGameLost, isHardMode)
       if (type === 'clipboard') {
         handleShareCopySuccess()
       }
     } catch (e) {
       handleShareFailure()
     }
-  }, [guesses, isGameLost, handleShareCopySuccess, handleShareFailure])
+  }, [
+    guesses,
+    isGameLost,
+    isHardMode,
+    handleShareCopySuccess,
+    handleShareFailure,
+  ])
 
-  const renderShareText = useCallback((guesses: Word[], lost: boolean) => {
-    const text = getShareText(guesses, lost)
-    const rows = text.split('\n')
-    return (
-      <p className="text-xs text-left pt-5 dark:text-white">
-        {rows.map((row, index) => (
-          <React.Fragment key={index}>
-            {row}
-            <br />
-          </React.Fragment>
-        ))}
-      </p>
-    )
-  }, [])
+  const renderShareText = useCallback(
+    (guesses: Word[], lost: boolean, isHardMode: boolean) => {
+      const text = getShareText(guesses, lost, isHardMode)
+      const rows = text.split('\n')
+      return (
+        <p className="text-xs text-left pt-5 dark:text-white">
+          {rows.map((row, index) => (
+            <React.Fragment key={index}>
+              {row}
+              <br />
+            </React.Fragment>
+          ))}
+        </p>
+      )
+    },
+    []
+  )
 
   return (
     <BaseModal
@@ -107,7 +118,7 @@ export const StatsModal = ({
                   Ha a megosztás gomb nem működik, másold ki innen az
                   eredményedet:
                 </p>
-                {renderShareText(guesses, isGameLost)}
+                {renderShareText(guesses, isGameLost, isHardMode)}
               </div>
             </>
           )}
