@@ -2,12 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  --default-cell-bg-color: theme('colors.slate.400');
+:root {
+  --animation-speed: 1000ms;
+  --animation-speed-fast: 250ms;
+  --default-cell-bg-color: theme('colors.white');
+  --default-cell-border-color: theme('colors.black');
+  --default-cell-text-color: theme('colors.black');
+  --absent-cell-bg-color: theme('colors.slate.400');
+  --correct-cell-bg-color: theme('colors.green.400');
+  --present-cell-bg-color: theme('colors.yellow.400');
 }
 
 .dark {
-  --default-cell-bg-color: theme('colors.slate.700');
+  --default-cell-bg-color: theme('colors.slate.900');
+  --default-cell-border-color: theme('colors.white');
+  --default-cell-text-color: theme('colors.white');
+  --absent-cell-bg-color: theme('colors.slate.700');
+}
+
+.high-contrast {
+  --correct-cell-bg-color: theme('colors.orange.400');
+  --present-cell-bg-color: theme('colors.cyan.400');
 }
 
 .cell-fill-animation {
@@ -38,16 +53,27 @@ html {
   animation-fill-mode: backwards;
 }
 
+svg:hover {
+  animation: float infinite;
+  animation-duration: var(--animation-speed);
+}
+
+.jiggle {
+  animation: jiggle linear;
+  animation-duration: var(--animation-speed-fast);
+}
+
 @keyframes revealAbsentCharCell {
   0% {
     transform: rotateX(0deg);
     background-color: var(--default-cell-bg-color);
-    border-color: var(--default-cell-bg-color);
+    border-color: var(--default-cell-border-color);
+    color: var(--default-cell-text-color);
   }
   100% {
     transform: rotateX(180deg);
-    background-color: var(--default-cell-bg-color);
-    border-color: var(--default-cell-bg-color);
+    background-color: var(--absent-cell-bg-color);
+    border-color: var(--absent-cell-bg-color);
   }
 }
 
@@ -55,12 +81,13 @@ html {
   0% {
     transform: rotateX(0deg);
     background-color: var(--default-cell-bg-color);
-    border-color: var(--default-cell-bg-color);
+    border-color: var(--default-cell-border-color);
+    color: var(--default-cell-text-color);
   }
   100% {
     transform: rotateX(180deg);
-    background-color: theme('colors.green.500');
-    border-color: theme('colors.green.500');
+    background-color: var(--correct-cell-bg-color);
+    border-color: var(--correct-cell-bg-color);
   }
 }
 
@@ -68,12 +95,13 @@ html {
   0% {
     transform: rotateX(0deg);
     background-color: var(--default-cell-bg-color);
-    border-color: var(--default-cell-bg-color);
+    border-color: var(--default-cell-border-color);
+    color: var(--default-cell-text-color);
   }
   100% {
     transform: rotateX(180deg);
-    background-color: theme('colors.yellow.500');
-    border-color: theme('colors.yellow.500');
+    background-color: var(--present-cell-bg-color);
+    border-color: var(--present-cell-bg-color);
   }
 }
 
@@ -103,4 +131,34 @@ html {
 
 .shadowed {
   text-shadow: 1px 1px 1px #000000;
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(0, -0.5rem);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes jiggle {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-0.5rem, 0);
+  }
+  50% {
+    transform: translate(0.5rem, 0);
+  }
+  75% {
+    transform: translate(-0.5rem, 0);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
 }

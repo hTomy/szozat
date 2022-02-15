@@ -2,6 +2,7 @@ import { getGuessStatuses, Word } from './statuses'
 import { solutionIndex, solutionCreator } from './words'
 import { GAME_TITLE } from '../constants/strings'
 import { MAX_CHALLENGES } from '../constants/settings'
+import { getStoredIsHighContrastMode } from './localStorage'
 
 export const getPuzzleName = () => {
   return solutionCreator !== undefined
@@ -45,14 +46,24 @@ export const generateEmojiGrid = (guesses: Word[]) => {
   return guesses
     .map((guess) => {
       const status = getGuessStatuses(guess)
+      const isHighContrast = getStoredIsHighContrastMode()
       return guess
         .map((_, i) => {
           switch (status[i]) {
             case 'correct':
+              if (isHighContrast) {
+                return '🟧'
+              }
               return '🟩'
             case 'present':
+              if (isHighContrast) {
+                return '🟦'
+              }
               return '🟨'
             default:
+              if (localStorage.getItem('theme') === 'dark') {
+                return '⬛'
+              }
               return '⬜'
           }
         })

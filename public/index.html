@@ -4,12 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Napi szójáték a Wordle alapján"
-    />
+    <meta name="description" content="%REACT_APP_GAME_DESCRIPTION%" />
     <meta property="og:image" content="%PUBLIC_URL%/facebook-share.png" />
-    <meta property="og:description" content="Napi szójáték a Wordle alapján" />
+    <meta property="og:description" content="%REACT_APP_GAME_DESCRIPTION%" />
 
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png">
@@ -33,16 +30,19 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>Szózat</title>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=%REACT_APP_GOOGLE_MEASUREMENT_ID%"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+    <title>%REACT_APP_GAME_NAME%</title>
 
-      gtag('config', '%REACT_APP_GOOGLE_MEASUREMENT_ID%');
-    </script>
+    <% if (process.env.NODE_ENV === 'production' && process.env.REACT_APP_GOOGLE_MEASUREMENT_ID != null) { %>
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=%REACT_APP_GOOGLE_MEASUREMENT_ID%"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', '%REACT_APP_GOOGLE_MEASUREMENT_ID%');
+      </script>
+    <% } %>
   </head>
   <body>
     <noscript>Be kell kapcsolni a JavaScriptet az applikáció futtatásához.</noscript>

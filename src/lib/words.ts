@@ -3,6 +3,7 @@ import { CharValue, Word } from './statuses'
 import { isEqual } from 'lodash'
 import { getWordLetters } from './hungarianWordUtils'
 import { VALID_GUESSES } from '../constants/validGuesses'
+import { WRONG_SPOT_MESSAGE, NOT_CONTAINED_MESSAGE } from '../constants/strings'
 import {
   getDecodedHashParam,
   HASH_PARAM_KEY_CREATOR,
@@ -37,7 +38,7 @@ export const findFirstUnusedReveal = (word: Word, guesses: Word[]) => {
         knownLetterSet.add(guess[i])
       }
       if (statuses[i] === 'correct' && word[i] !== guess[i]) {
-        return `A(z) ${guess[i]} betűnek a(z) ${i + 1}. pozícióban kell lennie.`
+        return WRONG_SPOT_MESSAGE(guess[i], i + 1)
       }
     }
   }
@@ -45,7 +46,7 @@ export const findFirstUnusedReveal = (word: Word, guesses: Word[]) => {
   for (const letter of Array.from(knownLetterSet.values())) {
     // fail fast, always return first failed letter if applicable
     if (!word.includes(letter)) {
-      return `A(z) ${letter} betűnek is szerepelnie kell a szóban.`
+      return NOT_CONTAINED_MESSAGE(letter)
     }
   }
   return false

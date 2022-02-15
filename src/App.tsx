@@ -2,16 +2,12 @@ import {
   InformationCircleIcon,
   ChartBarIcon,
   PlusCircleIcon,
-  SunIcon,
-  MoonIcon,
-  CakeIcon,
-  AcademicCapIcon,
+  CogIcon,
 } from '@heroicons/react/outline'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Alert } from './components/alerts/Alert'
 import { Grid } from './components/grid/Grid'
 import { Keyboard } from './components/keyboard/Keyboard'
-import { AboutModal } from './components/modals/AboutModal'
 import { InfoModal } from './components/modals/InfoModal'
 import { StatsModal } from './components/modals/StatsModal'
 import {
@@ -21,11 +17,11 @@ import {
   isWordEqual,
   findFirstUnusedReveal,
 } from './lib/words'
+import { SettingsModal } from './components/modals/SettingsModal'
 import {
   GAME_TITLE,
   WIN_MESSAGES,
   GAME_COPIED_MESSAGE,
-  ABOUT_GAME_MESSAGE,
   NOT_ENOUGH_LETTERS_MESSAGE,
   WORD_NOT_FOUND_MESSAGE,
   CORRECT_WORD_MESSAGE,
@@ -41,12 +37,12 @@ import { addStatsForCompletedGame, loadStats } from './lib/stats'
 import {
   loadGameStateFromLocalStorage,
   saveGameStateToLocalStorage,
+  setStoredIsHighContrastMode,
+  getStoredIsHighContrastMode,
 } from './lib/localStorage'
 import { CharValue, Word } from './lib/statuses'
 import { CreatePuzzleModal } from './components/modals/CreatePuzzleModal'
 import { DOUBLE_LETTERS } from './lib/hungarianWordUtils'
-
-import './App.css'
 import { getPuzzleName } from './lib/share'
 
 import './App.css'
@@ -59,11 +55,13 @@ function App() {
   const [currentGuess, setCurrentGuess] = useState<Word>([])
   const [isGameWon, setIsGameWon] = useState(false)
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
-  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false)
   const [isNotEnoughLetters, setIsNotEnoughLetters] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [isHardModeAlertOpen, setIsHardModeAlertOpen] = useState(false)
   const [isCreatePuzzleModalOpen, setIsCreatePuzzleModalOpen] = useState(false)
   const [isWordNotFoundAlertOpen, setIsWordNotFoundAlertOpen] = useState(false)
+  const [currentRowClass, setCurrentRowClass] = useState('')
   const [shareComplete, setShareComplete] = useState(false)
   const [shareFailed, setShareFailed] = useState(false)
   const [isGameLost, setIsGameLost] = useState(false)
@@ -73,6 +71,9 @@ function App() {
       : prefersDarkMode
       ? true
       : false
+  )
+  const [isHighContrastMode, setIsHighContrastMode] = useState(
+    getStoredIsHighContrastMode()
   )
   const [successAlert, setSuccessAlert] = useState('')
   const [isRevealing, setIsRevealing] = useState(false)
@@ -117,7 +118,13 @@ function App() {
     } else {
       document.documentElement.classList.remove('dark')
     }
-  }, [isDarkMode])
+
+    if (isHighContrastMode) {
+      document.documentElement.classList.add('high-contrast')
+    } else {
+      document.documentElement.classList.remove('high-contrast')
+    }
+  }, [isDarkMode, isHighContrastMode])
 
   const handleDarkMode = (isDark: boolean) => {
     setIsDarkMode(isDark)
@@ -125,8 +132,20 @@ function App() {
   }
 
   const handleHardMode = (isHard: boolean) => {
-    setIsHardMode(isHard)
-    localStorage.setItem('gameMode', isHard ? 'hard' : 'normal')
+    if (guesses.length === 0 || localStorage.getItem('gameMode') === 'hard') {
+      setIsHardMode(isHard)
+      localStorage.setItem('gameMode', isHard ? 'hard' : 'normal')
+    } else {
+      setIsHardModeAlertOpen(true)
+      return setTimeout(() => {
+        setIsHardModeAlertOpen(false)
+      }, ALERT_TIME_MS)
+    }
+  }
+
+  const handleHighContrastMode = (isHighContrast: boolean) => {
+    setIsHighContrastMode(isHighContrast)
+    setStoredIsHighContrastMode(isHighContrast)
   }
 
   useEffect(() => {
@@ -257,8 +276,10 @@ function App() {
     }
     if (!(currentGuess.length === MAX_WORD_LENGTH)) {
       setIsNotEnoughLetters(true)
+      setCurrentRowClass('jiggle')
       return setTimeout(() => {
         setIsNotEnoughLetters(false)
+        setCurrentRowClass('')
       }, ALERT_TIME_MS)
     }
 
@@ -267,8 +288,10 @@ function App() {
       !isWordEqual(currentGuess, solution)
     ) {
       setIsWordNotFoundAlertOpen(true)
+      setCurrentRowClass('jiggle')
       return setTimeout(() => {
         setIsWordNotFoundAlertOpen(false)
+        setCurrentRowClass('')
       }, ALERT_TIME_MS)
     }
 
@@ -278,8 +301,10 @@ function App() {
       if (firstMissingReveal) {
         setIsMissingLetterMessage(firstMissingReveal)
         setIsMissingPreviousLetters(true)
+        setCurrentRowClass('jiggle')
         return setTimeout(() => {
           setIsMissingPreviousLetters(false)
+          setCurrentRowClass('')
         }, ALERT_TIME_MS)
       }
     }
@@ -335,11 +360,15 @@ function App() {
         isOpen={isWordNotFoundAlertOpen}
       />
       <Alert message={missingLetterMessage} isOpen={isMissingPreviousLetters} />
-      <Alert message={CORRECT_WORD_MESSAGE(solution)} isOpen={isGameLost} />
+      <Alert
+        message={CORRECT_WORD_MESSAGE(solution)}
+        isOpen={isGameLost && !isRevealing}
+      />
       <Alert
         message={successAlert}
         isOpen={successAlert !== ''}
         variant="success"
+        topMost={true}
       />
       <Alert
         message={GAME_COPIED_MESSAGE}
@@ -366,9 +395,16 @@ function App() {
         handleShareFailure={handleShareFailure}
         isHardMode={isHardMode}
       />
-      <AboutModal
-        isOpen={isAboutModalOpen}
-        handleClose={() => setIsAboutModalOpen(false)}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        handleClose={() => setIsSettingsModalOpen(false)}
+        isHardMode={isHardMode}
+        handleHardMode={handleHardMode}
+        isDarkMode={isDarkMode}
+        handleDarkMode={handleDarkMode}
+        isHardModeErrorModalOpen={isHardModeAlertOpen}
+        isHighContrastMode={isHighContrastMode}
+        handleHighContrastMode={handleHighContrastMode}
       />
       <CreatePuzzleModal
         isOpen={isCreatePuzzleModalOpen}
@@ -380,28 +416,6 @@ function App() {
             <h1 className="text-xl grow font-bold dark:text-white">
               {GAME_TITLE} - {getPuzzleName()}
             </h1>
-            {isHardMode ? (
-              <AcademicCapIcon
-                className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
-                onClick={() => handleHardMode(!isHardMode)}
-              />
-            ) : (
-              <CakeIcon
-                className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
-                onClick={() => handleHardMode(!isHardMode)}
-              />
-            )}
-            {isDarkMode ? (
-              <SunIcon
-                className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
-                onClick={() => handleDarkMode(!isDarkMode)}
-              />
-            ) : (
-              <MoonIcon
-                className="h-6 w-6 mr-2 cursor-pointer"
-                onClick={() => handleDarkMode(!isDarkMode)}
-              />
-            )}
             <InformationCircleIcon
               className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
               onClick={() => setIsInfoModalOpen(true)}
@@ -411,8 +425,12 @@ function App() {
               onClick={() => setIsStatsModalOpen(true)}
             />
             <PlusCircleIcon
-              className="h-6 w-6 cursor-pointer dark:stroke-white"
+              className="h-6 w-6 mr-2 cursor-pointer dark:stroke-white"
               onClick={() => setIsCreatePuzzleModalOpen(true)}
+            />
+            <CogIcon
+              className="h-6 w-6 cursor-pointer dark:stroke-white"
+              onClick={() => setIsSettingsModalOpen(true)}
             />
           </div>
           <div
@@ -424,6 +442,7 @@ function App() {
               currentGuess={currentGuess}
               size={gridSize}
               isRevealing={isRevealing}
+              currentRowClassName={currentRowClass}
             />
           </div>
           <div className="pb-2">
@@ -435,15 +454,6 @@ function App() {
               isRevealing={isRevealing}
             />
           </div>
-        </div>
-        <div className="pt-5 pb-5">
-          <button
-            type="button"
-            className="mx-auto mt-8 flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 select-none"
-            onClick={() => setIsAboutModalOpen(true)}
-          >
-            {ABOUT_GAME_MESSAGE}
-          </button>
         </div>
       </div>
     </>

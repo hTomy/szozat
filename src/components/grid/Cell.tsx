@@ -1,6 +1,7 @@
 import { CharStatus } from '../../lib/statuses'
 import classnames from 'classnames'
 import { REVEAL_TIME_MS } from '../../constants/settings'
+import { getStoredIsHighContrastMode } from '../../lib/localStorage'
 
 type Props = {
   value?: string
@@ -20,6 +21,7 @@ export const Cell = ({
   const isFilled = value && !isCompleted
   const shouldReveal = isRevealing && isCompleted
   const animationDelay = `${position * REVEAL_TIME_MS}ms`
+  const isHighContrast = getStoredIsHighContrastMode()
 
   const containerClasses = classnames(
     'grow relative inline-flex justify-center border-solid border-2 font-bold rounded dark:text-white before:content-[""] before:block before:pb-[100%]',
@@ -29,10 +31,14 @@ export const Cell = ({
       'border-black dark:border-slate-100': value && !status,
       'absent shadowed bg-slate-400 dark:bg-slate-700 text-white border-slate-400 dark:border-slate-700':
         status === 'absent',
+      'correct shadowed bg-orange-500 text-white border-orange-500':
+        status === 'correct' && isHighContrast,
+      'present shadowed bg-cyan-500 text-white border-cyan-500':
+        status === 'present' && isHighContrast,
       'correct shadowed bg-green-500 text-white border-green-500':
-        status === 'correct',
+        status === 'correct' && !isHighContrast,
       'present shadowed bg-yellow-500 text-white border-yellow-500':
-        status === 'present',
+        status === 'present' && !isHighContrast,
       'cell-fill-animation': isFilled,
       'cell-reveal': shouldReveal,
     }
