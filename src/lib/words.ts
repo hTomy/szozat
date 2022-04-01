@@ -10,6 +10,7 @@ import {
   HASH_PARAM_KEY_SOLUTION,
 } from './hashUtils'
 import { getGuessStatuses } from './statuses'
+import { addDays, differenceInDays, startOfDay } from 'date-fns'
 
 export const isWordEqual = (word1: Word, word2: Word) => {
   return isEqual(word1, word2)
@@ -54,12 +55,11 @@ export const findFirstUnusedReveal = (word: Word, guesses: Word[]) => {
 
 export const getWordOfDay = () => {
   // January 1, 2022 Game Epoch
-  const epochMs = new Date('January 1, 2022 00:00:00').valueOf()
+  const gameEpoch = new Date('January 1, 2022 00:00:00')
   const now = Date.now()
-  const msInDay = 86400000
-  const index = Math.floor((now - epochMs) / msInDay)
+  const index = differenceInDays(now, gameEpoch)
+  const nextday = startOfDay(addDays(now, 1))
   const indexModulo = index % WORDS.length
-  const nextday = (index + 1) * msInDay + epochMs
 
   return {
     solution: WORDS[indexModulo],
